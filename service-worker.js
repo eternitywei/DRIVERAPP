@@ -194,7 +194,7 @@ async function syncLocations() {
     // Create a new Supabase client
     // Note: In a real implementation, you'd need to load the Supabase library in the worker
     // This is simplified for demonstration purposes
-    const response = await fetch('https://bguwiprkgcxrqauztmvd.supabase.co/rest/v1/locations', {
+    const response = await fetch('https://jeszxshbzmnxdoqjltuk.supabase.co/rest/v1/locations', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -225,8 +225,8 @@ async function getSupabaseClientInfo() {
   const clients = await self.clients.matchAll();
   if (clients.length === 0) {
     return {
-      supabaseUrl: 'https://bguwiprkgcxrqauztmvd.supabase.co',
-      supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJndXdpcHJrZ2N4cnFhdXp0bXZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA3ODAxOTksImV4cCI6MjA1NjM1NjE5OX0.ATbtMPiPt8VvtyVBu-gpmDo8Mo1eWy1aFXKfb6m1QsE'
+      supabaseUrl: 'https://jeszxshbzmnxdoqjltuk.supabase.co',
+      supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Implc3p4c2hiem1ueGRvcWpsdHVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA4MzM0NjIsImV4cCI6MjA1NjQwOTQ2Mn0.FgZmXxDX00_9OLyLgFM_dyrPpb1eISeIte9s1edLPcE'
     };
   }
   
