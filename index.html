@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GPS Location Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#317EFB">
+  <link rel="icon" type="image/png" href="icons/icon-192x192.png">
+  
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 16px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+      font-size: 14px;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    #currentTime {
+      font-size: 1.5em;
+      margin: 10px 0;
+    }
+    #version {
+      font-size: 1em;
+      color: gray;
+      margin-bottom: 10px;
+    }
+    .status-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .online {
+      background-color: #4CAF50;
+    }
+    .offline {
+      background-color: #F44336;
+    }
+    .bg-active {
+      background-color: #2196F3;
+    }
+    .bg-inactive {
+      background-color: #FF9800;
+    }
+    .status-text {
+      font-size: 14px;
+    }
+    .btn {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 10px 16px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 14px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .table-container {
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    @media (max-width: 600px) {
+      th, td {
+        padding: 4px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <p id="version">Version 0.9</p>
+  <h1 id="currentTime"></h1>
+  
+  <div class="status-container">
+    <div id="onlineStatus" class="status-indicator online"></div>
+    <span id="onlineStatusText" class="status-text">Online</span>
+  </div>
+  
+  <div class="status-container">
+    <div id="bgStatus" class="status-indicator bg-inactive"></div>
+    <span id="bgStatusText" class="status-text">Background Mode: Inactive</span>
+  </div>
+  
+  <button id="requestPermission" class="btn">Enable Background Access</button>
+  <button id="manualSync" class="btn">Manual Sync</button>
+  <button id="refreshData" class="btn">Refresh Data</button>
+  
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Location ID</th>
+          <th>User ID</th>
+          <th>Timestamp</th>
+          <th>Longitude</th>
+          <th>Latitude</th>
+          <th>Elevation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Rows will be dynamically inserted here -->
+      </tbody>
+    </table>
+  </div>
+  
+  <!-- IMPORTANT: Load Supabase using their recommended UMD build -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  
+  <!-- Only load app.js AFTER Supabase is loaded -->
+  <script src="app.js"></script>
+  
+  <script>
+    function updateCurrentTime() {
+      const now = new Date();
+      const timeElement = document.getElementById('currentTime');
+      if (timeElement) {
+        timeElement.textContent = now.toLocaleString();
+      } else {
+        console.error("❌ Element with ID 'currentTime' not found.");
+      }
+    }
+
+    // Run this after DOM is fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log("✅ DOM Loaded");
+      updateCurrentTime();
+      setInterval(updateCurrentTime, 1000);
+      
+      // Update online/offline status indicators
+      updateOnlineStatus();
+      window.addEventListener('online', updateOnlineStatus);
+      window.addEventListener('offline', updateOnlineStatus);
+      
+      // Set up button event listeners
+      document.getElementById('requestPermission').addEventListener('click', requestBackgroundPermissions);
+      document.getElementById('manualSync').addEventListener('click', triggerManualSync);
+      document.getElementById('refreshData').addEventListener('click', refreshData);
+    });
+    
+    // Update online/offline status indicators
+    function updateOnlineStatus() {
+      const indicator = document.getElementById('onlineStatus');
+      const text = document.getElementById('onlineStatusText');
+      
+      if (navigator.onLine) {
+        indicator.className = 'status-indicator online';
+        text.textContent = 'Online';
+      } else {
+        indicator.className = 'status-indicator offline';
+        text.textContent = 'Offline - Data will sync when online';
+      }
+    }
+    
+    // Request permissions for background operation
+    async function requestBackgroundPermissions() {
+      try {
+        // Request for wake lock
+        if ('wakeLock' in navigator) {
+          try {
+            const wakeLock = await navigator.wakeLock.request('screen');
+            console.log('Wake Lock acquired successfully');
+          } catch (err) {
+            console.error('Error acquiring wake lock:', err);
+          }
+        }
+        
+        // Request for background sync
+        if ('serviceWorker' in navigator) {
+          const registration = await navigator.serviceWorker.ready;
+          
+          if ('periodicSync' in registration) {
+            const status = await navigator.permissions.query({
+              name: 'periodic-background-sync',
+            });
+            
+            if (status.state === 'granted') {
+              await registration.periodicSync.register('location-update', {
+                minInterval: 15 * 60 * 1000, // 15 minutes
+              });
+              
+              document.getElementById('bgStatus').className = 'status-indicator bg-active';
+              document.getElementById('bgStatusText').textContent = 'Background Mode: Active';
+              console.log('Periodic background sync registered');
+            } else {
+              console.log('Periodic background sync permission not granted');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error requesting permissions:', error);
+      }
+    }
+    
+    // Trigger manual sync
+    function triggerManualSync() {
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.ready.then(registration => {
+          registration.sync.register('sync-locations')
+            .then(() => {
+              console.log('Manual sync triggered');
+              alert('Sync initiated!');
+            })
+            .catch(err => {
+              console.error('Error triggering sync:', err);
+              alert('Sync failed. See console for details.');
+            });
+        });
+      } else {
+        console.error('Service worker not available for sync');
+        alert('Service worker not ready. Please try again in a moment.');
+      }
+    }
+    
+    // Refresh data from server
+    function refreshData() {
+      if (window.initializeApp) {
+        window.fetchStoredData();
+      } else {
+        location.reload();
+      }
+    }
+  </script>
+</body>
+</html>
