@@ -1,0 +1,910 @@
+<! DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Para - Available Buses</title>
+    <style>
+        :root {
+            --primary-gradient-start: #4a6bff;
+            --primary-gradient-end: #39c2ff;
+            --dark-bg: #1e2130;
+            --darker-bg: #171924;
+            --card-bg: rgba(30, 33, 48, 0.85);
+            --button-color: #e53935;
+            --text-color: #ffffff;
+            --secondary-text: #a0a7b8;
+            --accent-blue: #39c2ff;
+            --accent-green: #4cd964;
+            --border-radius: 12px;
+        }
+       
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+       
+        body {
+            background-color: var(--darker-bg);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+       
+        .app-container {
+            width: 100%;
+            max-width: 380px;
+            background: var(--dark-bg);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            height: 788px;
+            display: flex;
+            flex-direction: column;
+        }
+       
+        .header {
+            background: var(--darker-bg);
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+       
+        .header .logo {
+            display: flex;
+            align-items: center;
+        }
+       
+        .header .logo-icon {
+            background: linear-gradient(to right, var(--primary-gradient-start), var(--primary-gradient-end));
+            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+       
+        .header .logo-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+       
+        .header .refresh-icon {
+            background: var(--accent-blue);
+            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+       
+        .content {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Change from overflow-y: auto to overflow: hidden */
+        }
+       
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+       
+        .bus-list {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            overflow-y: auto; /* Add scrolling to the bus list */
+            margin-bottom: 20px;
+            flex: 1; /* Make the bus list take remaining space */
+            max-height: calc(100vh - 400px); /* Adjust this value based on your needs */
+        }
+
+
+        /* Add custom scrollbar styling */
+        .bus-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+
+        .bus-list::-webkit-scrollbar-track {
+            background: var(--darker-bg);
+            border-radius: 4px;
+        }
+
+
+        .bus-list::-webkit-scrollbar-thumb {
+            background: var(--accent-blue);
+            border-radius: 4px;
+        }
+
+
+        .bus-list::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-gradient-end);
+        }
+       
+        .bus-item {
+            display: flex;
+            padding: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+       
+        .bus-item:last-child {
+            border-bottom: none;
+        }
+       
+        .bus-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+       
+        .bus-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--accent-blue);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+       
+        .bus-details {
+            flex: 1;
+        }
+       
+        .route-number {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+       
+        .route-description {
+            color: var (--secondary-text);
+            font-size: 14px;
+        }
+       
+        .button-container {
+            padding: 16px 20px;
+        }
+       
+        .map-btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: var(--border-radius);
+            border: none;
+            background-color: var(--button-color);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+       
+        .map-btn:hover {
+            background-color: #d32f2f;
+        }
+       
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--secondary-text);
+            text-align: center;
+            padding: 20px;
+        }
+       
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+       
+        .empty-state-text {
+            font-size: 16px;
+            max-width: 240px;
+        }
+       
+        /* For the animation effects */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+       
+        .bus-list .bus-item {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+       
+        .bus-list .bus-item:nth-child(1) { animation-delay: 0.05s; }
+        .bus-list .bus-item:nth-child(2) { animation-delay: 0.1s; }
+        .bus-list .bus-item:nth-child(3) { animation-delay: 0.15s; }
+        .bus-list .bus-item:nth-child(4) { animation-delay: 0.2s; }
+        .bus-list .bus-item:nth-child(5) { animation-delay: 0.25s; }
+        .bus-list .bus-item:nth-child(6) { animation-delay: 0.3s; }
+        .bus-list .bus-item:nth-child(7) { animation-delay: 0.35s; }
+        .bus-list .bus-item:nth-child(8) { animation-delay: 0.4s; }
+        .bus-list .bus-item:nth-child(9) { animation-delay: 0.45s; }
+        .bus-list .bus-item:nth-child(10) { animation-delay: 0.5s; }
+       
+        /* Loading indicator */
+        .loading {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(23, 25, 36, 0.8);
+            z-index: 10;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+       
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--accent-blue);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 16px;
+        }
+       
+        .loading-text {
+            color: var(--text-color);
+            font-size: 16px;
+        }
+       
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+       
+        /* Direction selector styles */
+        .direction-selector {
+            display: flex;
+            background: var(--darker-bg);
+            border-radius: var(--border-radius);
+            margin-bottom: 20px; /* Increased from 16px for better spacing */
+            overflow: hidden;
+            min-height: 56px; /* Added to match button height */
+        }
+       
+        .direction-btn {
+            flex: 1;
+            padding: 16px; /* Increased from 12px */
+            text-align: center;
+            background: transparent;
+            border: none;
+            color: var(--secondary-text);
+            font-size: 16px; /* Increased from 14px */
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 56px; /* Added explicit height */
+            text-transform: uppercase; /* Optional: makes the text all caps for better visibility */
+        }
+       
+        .direction-btn.active {
+            background: var(--accent-blue);
+            color: white;
+        }
+       
+        .via-badge {
+            display: inline-block;
+            background: rgba(57, 194, 255, 0.2);
+            color: var(--accent-blue);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 6px;
+        }
+
+
+        .bus-number-container {
+            margin-bottom: 16px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 12px;
+        }
+
+
+        .bus-number-input {
+            width: 100%;
+            background: var(--darker-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--text-color);
+            font-size: 16px;
+            outline: none;
+        }
+
+
+        .bus-number-input::placeholder {
+            color: var(--secondary-text);
+        }
+
+
+        .bus-number-input:focus {
+            border-color: var(--accent-blue);
+        }
+
+
+        .required-field {
+            color: var(--button-color);
+            margin-left: 4px;
+        }
+
+
+        .location-selectors {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+
+        .location-select-container {
+            margin-bottom: 0; /* Remove individual margin since we're using gap */
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 12px;
+            position: relative;
+        }
+
+
+        .location-select {
+            width: 100%;
+            background: var(--darker-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--text-color);
+            font-size: 16px;
+            outline: none;
+            cursor: pointer;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+
+        .location-select:focus {
+            border-color: var(--accent-blue);
+        }
+
+
+        .location-select option {
+            background: var(--darker-bg);
+            color: var (--text-color);
+            padding: 12px;
+        }
+
+
+        .location-select-container::after {
+            content: '';
+            position: absolute;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 6px solid var(--text-color);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 16C4 17.1046 4.89543 18 6 18H18C19.1046 18 20 17.1046 20 16V8C20 6.89543 19.1046 6 18 6H6C4.89543 6 4 6.89543 4 8V16Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 6V18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M8 21L16 21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M7 3L17 3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <span class="logo-text">Project Para</span>
+            </div>
+            <div class="refresh-icon" id="refreshBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 4V10H7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M23 20V14H17" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M20.49 9.00001C19.9828 7.56329 19.1209 6.28067 17.9845 5.27102C16.8482 4.26137 15.4745 3.56428 14 3.24601C12.5255 2.92774 10.9998 3.00001 9.56 3.45636C8.12022 3.91271 6.82196 4.73765 5.78 5.84001L1 10M23 14L18.22 18.16C17.1781 19.2624 15.8798 20.0873 14.44 20.5436C13.0002 21 11.4745 21.0722 10 20.754C8.52552 20.4357 7.15183 19.7386 6.01547 18.729C4.87911 17.7193 4.01718 16.4367 3.51 15" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </div>
+       
+        <div class="content">
+            <!-- Direction Selector -->
+            <div class="direction-selector">
+                <button class="direction-btn active" id="southboundBtn">Southbound</button>
+                <button class="direction-btn" id="northboundBtn">Northbound</button>
+            </div>
+
+
+            <!-- Bus Number Input -->
+            <div class="bus-number-container">
+                <input type="text"
+                    class="bus-number-input"
+                    id="busNumberInput"
+                    placeholder="Enter Bus Number"
+                    pattern="[0-9]{1,4}"
+                    maxlength="4"
+                    inputmode="numeric"
+                    onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                    required>
+            </div>
+
+
+            <!-- Location Selectors (Together) -->
+            <div class="location-selectors">
+                <div class="location-select-container">
+                    <select class="location-select" id="originSelect">
+                        <option value="" disabled selected>Select Origin</option>
+                    </select>
+                </div>
+                <div class="location-select-container">
+                    <select class="location-select" id="destinationSelect">
+                        <option value="" disabled selected>Select Destination</option>
+                    </select>
+                </div>
+            </div>
+
+
+            <h2 class="section-title">Pick Route</h2>
+           
+            <div class="bus-list" id="busList">
+                <!-- Bus items will be dynamically generated -->
+            </div>
+        </div>
+
+
+        <!-- Rest of the content remains the same -->
+        <!-- Empty state (hidden by default) -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-state-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 12H2" stroke="#a0a7b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M5 12V18C5 19.1046 5.89543 20 7 20H17C18.1046 20 19 19.1046 19 18V12" stroke="#a0a7b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 12V20" stroke="#a0a7b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M17 8C17 5.23858 14.7614 3 12 3C9.23858 3 7 5.23858 7 8" stroke="#a0a7b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="empty-state-text">No buses available right now. Please try again later.</div>
+        </div>
+       
+        <div class="button-container">
+            <button class="map-btn" id="mapBtn">Start Trip</button>
+        </div>
+       
+        <!-- Loading indicator -->
+        <div class="loading" id="loadingIndicator">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Updating bus locations...</div>
+        </div>
+    </div>
+
+
+    <script>
+        // Add this before the DOMContentLoaded event listener
+        const routeData = {
+            southbound: [
+                { origin: "Iba", destination: "Olongapo", via: null },
+                { origin: "Iba", destination: "Pasay", via: "Express" },
+                { origin: "Iba", destination: "Caloocan", via: "Express" },
+                { origin: "Iba", destination: "Sampaloc", via: "Express" },
+                { origin: "Iba", destination: "Cubao", via: "Express" },
+                { origin: "Iba", destination: "Pasay", via: "San Fernando" },
+                { origin: "Iba", destination: "Caloocan", via: "San Fernando" },
+                { origin: "Iba", destination: "Sampaloc", via: "San Fernando" },
+                { origin: "Iba", destination: "Cubao", via: "San Fernando" },
+                { origin: "Santa Cruz", destination: "Olongapo", via: null },
+                { origin: "Santa Cruz", destination: "Pasay", via: "Express" },
+                { origin: "Santa Cruz", destination: "Caloocan", via: "Express" },
+                { origin: "Santa Cruz", destination: "Sampaloc", via: "Express" },
+                { origin: "Santa Cruz", destination: "Pasay", via: "San Fernando" },
+                { origin: "Santa Cruz", destination: "Caloocan", via: "San Fernando" },
+                { origin: "Santa Cruz", destination: "Sampaloc", via: "San Fernando" }
+            ],
+            northbound: [
+                { origin: "Olongapo", destination: "Iba", via: null },
+                { origin: "Pasay", destination: "Iba", via: "Express" },
+                { origin: "Caloocan", destination: "Iba", via: "Express" },
+                { origin: "Sampaloc", destination: "Iba", via: "Express" },
+                { origin: "Cubao", destination: "Iba", via: "Express" },
+                { origin: "Pasay", destination: "Iba", via: "San Fernando" },
+                { origin: "Caloocan", destination: "Iba", via: "San Fernando" },
+                { origin: "Sampaloc", destination: "Iba", via: "San Fernando" },
+                { origin: "Cubao", destination: "Iba", via: "San Fernando" },
+                { origin: "Olongapo", destination: "Santa Cruz", via: null },
+                { origin: "Pasay", destination: "Santa Cruz", via: "Express" },
+                { origin: "Caloocan", destination: "Santa Cruz", via: "Express" },
+                { origin: "Sampaloc", destination: "Santa Cruz", via: "Express" },
+                { origin: "Pasay", destination: "Santa Cruz", via: "San Fernando" },
+                { origin: "Caloocan", destination: "Santa Cruz", via: "San Fernando" },
+                { origin: "Sampaloc", destination: "Santa Cruz", via: "San Fernando" }
+            ]
+        };
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM elements
+            const refreshBtn = document.getElementById('refreshBtn');
+            const busList = document.getElementById('busList');
+            const emptyState = document.getElementById('emptyState');
+            const mapBtn = document.getElementById('mapBtn');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const southboundBtn = document.getElementById('southboundBtn');
+            const northboundBtn = document.getElementById('northboundBtn');
+            const busNumberInput = document.getElementById('busNumberInput');
+            const originSelect = document.getElementById('originSelect');
+            const destinationSelect = document.getElementById('destinationSelect');
+           
+            // Route data
+            const routeData = {
+                southbound: [
+                    { origin: "Iba", destination: "Olongapo", via: null },
+                    { origin: "Iba", destination: "Pasay", via: "Express" },
+                    { origin: "Iba", destination: "Caloocan", via: "Express" },
+                    { origin: "Iba", destination: "Sampaloc", via: "Express" },
+                    { origin: "Iba", destination: "Cubao", via: "Express" },
+                    { origin: "Iba", destination: "Pasay", via: "San Fernando" },
+                    { origin: "Iba", destination: "Caloocan", via: "San Fernando" },
+                    { origin: "Iba", destination: "Sampaloc", via: "San Fernando" },
+                    { origin: "Iba", destination: "Cubao", via: "San Fernando" },
+                    { origin: "Santa Cruz", destination: "Olongapo", via: null },
+                    { origin: "Santa Cruz", destination: "Pasay", via: "Express" },
+                    { origin: "Santa Cruz", destination: "Caloocan", via: "Express" },
+                    { origin: "Santa Cruz", destination: "Sampaloc", via: "Express" },
+                    { origin: "Santa Cruz", destination: "Pasay", via: "San Fernando" },
+                    { origin: "Santa Cruz", destination: "Caloocan", via: "San Fernando" },
+                    { origin: "Santa Cruz", destination: "Sampaloc", via: "San Fernando" }
+                ],
+                northbound: [
+                    { origin: "Olongapo", destination: "Iba", via: null },
+                    { origin: "Pasay", destination: "Iba", via: "Express" },
+                    { origin: "Caloocan", destination: "Iba", via: "Express" },
+                    { origin: "Sampaloc", destination: "Iba", via: "Express" },
+                    { origin: "Cubao", destination: "Iba", via: "Express" },
+                    { origin: "Pasay", destination: "Iba", via: "San Fernando" },
+                    { origin: "Caloocan", destination: "Iba", via: "San Fernando" },
+                    { origin: "Sampaloc", destination: "Iba", via: "San Fernando" },
+                    { origin: "Cubao", destination: "Iba", via: "San Fernando" },
+                    { origin: "Olongapo", destination: "Santa Cruz", via: null },
+                    { origin: "Pasay", destination: "Santa Cruz", via: "Express" },
+                    { origin: "Caloocan", destination: "Santa Cruz", via: "Express" },
+                    { origin: "Sampaloc", destination: "Santa Cruz", via: "Express" },
+                    { origin: "Pasay", destination: "Santa Cruz", via: "San Fernando" },
+                    { origin: "Caloocan", destination: "Santa Cruz", via: "San Fernando" },
+                    { origin: "Sampaloc", destination: "Santa Cruz", via: "San Fernando" }
+                ]
+            };
+           
+            // Current direction (default: southbound)
+            let currentDirection = 'southbound';
+           
+            // Initialize the page with southbound routes
+            generateBusData();
+           
+            // Function to generate random bus data based on the current direction
+            function generateBusData() {
+                loadingIndicator.style.display = 'flex';
+               
+                setTimeout(function() {
+                    loadingIndicator.style.display = 'none';
+                    updateOriginOptions(); // Update origin options when direction changes
+                    filterRoutes(); // Use filterRoutes instead of direct mapping
+                }, 1000);
+            }
+           
+            // Add this sorting function before filtering routes
+            function sortRoutes(routes) {
+                return routes.sort((a, b) => {
+                    // First sort by origin
+                    const originCompare = a.origin.localeCompare(b.origin);
+                    if (originCompare !== 0) return originCompare;
+                   
+                    // If origins are same, sort by destination
+                    const destCompare = a.destination.localeCompare(b.destination);
+                    if (destCompare !== 0) return destCompare;
+                   
+                    // If both origin and destination are same, sort by via
+                    if (a.via && b.via) return a.via.localeCompare(b.via);
+                    if (a.via) return 1;
+                    if (b.via) return -1;
+                    return 0;
+                });
+            }
+
+
+            // Modify the filterRoutes function to use sorting
+            function filterRoutes() {
+                const selectedOrigin = originSelect.value;
+                const selectedDestination = destinationSelect.value;
+                const routes = routeData[currentDirection];
+               
+                const filteredRoutes = routes.filter(route => {
+                    const matchOrigin = !selectedOrigin || route.origin === selectedOrigin;
+                    const matchDestination = !selectedDestination || route.destination === selectedDestination;
+                    return matchOrigin && matchDestination;
+                });
+               
+                // Sort the filtered routes
+                const sortedRoutes = sortRoutes(filteredRoutes);
+               
+                const buses = sortedRoutes.map((route, index) => ({
+                    id: (index + 1000).toString(),
+                    icon: `R${index + 1}`,
+                    route: route.via ?
+                        `${route.origin} → ${route.destination} <span class="via-badge">${route.via}</span>` :
+                        `${route.origin} → ${route.destination}`
+                }));
+               
+                updateBusList(buses);
+            }
+           
+            // Update the bus list
+            function updateBusList(buses) {
+                // Clear the current list
+                busList.innerHTML = '';
+               
+                // Check if we have any buses
+                if (buses.length === 0) {
+                    emptyState.style.display = 'flex';
+                    busList.style.display = 'none';
+                } else {
+                    emptyState.style.display = 'none';
+                    busList.style.display = 'block';
+                   
+                    // Add buses to the list
+                    buses.forEach((bus, index) => {
+                        const busItem = document.createElement('div');
+                        busItem.className = 'bus-item';
+                        busItem.setAttribute('data-id', bus.id);
+                       
+                        // Modified to only show route once
+                        busItem.innerHTML = `
+                            <div class="bus-icon">${bus.icon}</div>
+                            <div class="bus-details">
+                                <div class="route-number">${bus.route}</div>
+                            </div>
+                        `;
+                       
+                        busItem.addEventListener('click', function() {
+                            showBusDetails(bus.id);
+                        });
+                       
+                        busList.appendChild(busItem);
+                    });
+                }
+            }
+           
+            // Function to show bus details
+            function showBusDetails(busId) {
+                if (busNumberInput.value.trim() === '') {
+                    alert('Please enter a bus number');
+                    busNumberInput.focus();
+                    return;
+                }
+
+
+                selectedRouteId = busId; // Store the selected route ID
+                const selectedBusItem = document.querySelector(`[data-id="${busId}"]`);
+                const allBusItems = document.querySelectorAll('.bus-item');
+               
+                // Remove selection from all items
+                allBusItems.forEach(item => {
+                    item.style.backgroundColor = '';
+                    item.style.borderLeft = '';
+                });
+               
+                // Highlight selected item
+                selectedBusItem.style.backgroundColor = 'rgba(57, 194, 255, 0.1)';
+                selectedBusItem.style.borderLeft = '4px solid var(--accent-blue)';
+               
+                // Enable the Start Trip button
+                mapBtn.disabled = false;
+            }
+           
+            // Event listeners
+           
+            // Direction buttons
+            southboundBtn.addEventListener('click', function() {
+                if (currentDirection !== 'southbound') {
+                    currentDirection = 'southbound';
+                    southboundBtn.classList.add('active');
+                    northboundBtn.classList.remove('active');
+                    originSelect.value = ''; // Reset selection
+                    destinationSelect.value = ''; // Reset selection
+                    updateOriginOptions(); // Update options for southbound
+                    generateBusData();
+                }
+            });
+           
+            northboundBtn.addEventListener('click', function() {
+                if (currentDirection !== 'northbound') {
+                    currentDirection = 'northbound';
+                    northboundBtn.classList.add('active');
+                    southboundBtn.classList.remove('active');
+                    originSelect.value = ''; // Reset selection
+                    destinationSelect.value = ''; // Reset selection
+                    updateOriginOptions(); // Update options for northbound
+                    generateBusData();
+                }
+            });
+           
+            // Refresh button
+            refreshBtn.addEventListener('click', function() {
+                generateBusData();
+            });
+           
+            // View Map button
+            mapBtn.addEventListener('click', function() {
+                if (!selectedRouteId || !busNumberInput.value.trim()) {
+                    alert('Please select a route and enter a bus number');
+                    return;
+                }
+
+
+                if (this.textContent === 'Start Trip') {
+                    this.textContent = 'End Trip';
+                    this.style.backgroundColor = '#d32f2f';
+                } else {
+                    // Reset everything when ending trip
+                    this.textContent = 'Start Trip';
+                    this.style.backgroundColor = 'var(--button-color)';
+                   
+                    // Reset bus number input
+                    busNumberInput.value = '';
+                    busNumberInput.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                   
+                    // Reset origin and destination selections
+                    originSelect.value = '';
+                    destinationSelect.value = '';
+                   
+                    // Reset route selection
+                    selectedRouteId = null;
+                    const allBusItems = document.querySelectorAll('.bus-item');
+                    allBusItems.forEach(item => {
+                        item.style.backgroundColor = '';
+                        item.style.borderLeft = '';
+                    });
+                   
+                    // Refresh the route list
+                    generateBusData();
+                }
+            });
+
+
+            // Add validation for required field
+            busNumberInput.addEventListener('input', function() {
+                if (this.value.trim() === '') {
+                    this.style.borderColor = 'var(--button-color)';
+                } else {
+                    this.style.borderColor = 'var(--accent-blue)';
+                }
+            });
+
+
+            // Add event listeners for the selectors
+            originSelect.addEventListener('change', filterRoutes);
+            destinationSelect.addEventListener('change', filterRoutes);
+
+
+            // Initialize the selects
+            updateOriginOptions();
+            updateDestinationOptions();
+        });
+
+
+        // Replace the existing updateOriginOptions function
+        function updateOriginOptions() {
+            // Get all unique origins from both southbound and northbound routes
+            const allOrigins = [...new Set([
+                ...routeData.southbound.map(route => route.origin),
+                ...routeData.northbound.map(route => route.origin)
+            ])].sort();
+           
+            // Clear current options
+            originSelect.innerHTML = '<option value="" disabled selected>Select Origin</option>';
+           
+            // Add all origins
+            allOrigins.forEach(origin => {
+                const option = document.createElement('option');
+                option.value = origin;
+                option.textContent = origin;
+                originSelect.appendChild(option);
+            });
+
+
+            // Update destinations after updating origins
+            updateDestinationOptions();
+        }
+
+
+        // Replace the existing updateDestinationOptions function
+        function updateDestinationOptions() {
+            // Get all unique destinations from both southbound and northbound routes
+            const allDestinations = [...new Set([
+                ...routeData.southbound.map(route => route.destination),
+                ...routeData.northbound.map(route => route.destination)
+            ])].sort();
+           
+            // Clear current options
+            destinationSelect.innerHTML = '<option value="" disabled selected>Select Destination</option>';
+           
+            // Add all destinations
+            allDestinations.forEach(destination => {
+                const option = document.createElement('option');
+                option.value = destination;
+                option.textContent = destination;
+                destinationSelect.appendChild(option);
+            });
+        }
+
+
+        // Add event listener for origin select to update destinations
+        originSelect.addEventListener('change', function() {
+            filterRoutes();
+        });
+
+
+        // Add this to the southbound button click event
+        southboundBtn.addEventListener('click', function() {
+            if (currentDirection !== 'southbound') {
+                currentDirection = 'southbound';
+                southboundBtn.classList.add('active');
+                northboundBtn.classList.remove('active');
+                originSelect.value = ''; // Reset selection
+                destinationSelect.value = ''; // Reset selection
+                updateOriginOptions(); // Update options for southbound
+                generateBusData();
+            }
+        });
+
+
+        // Add this to the northbound button click event
+        northboundBtn.addEventListener('click', function() {
+            if (currentDirection !== 'northbound') {
+                currentDirection = 'northbound';
+                northboundBtn.classList.add('active');
+                southboundBtn.classList.remove('active');
+                originSelect.value = ''; // Reset selection
+                destinationSelect.value = ''; // Reset selection
+                updateOriginOptions(); // Update options for northbound
+                generateBusData();
+            }
+        });
+
+
+        // Add this variable at the top of your script with other variables
+        let selectedRouteId = null;
+    </script>
+</body>
+</html>
+
