@@ -414,7 +414,25 @@
             border-top: 6px solid var(--text-color);
             pointer-events: none;
         }
+
+        .location-select.loading {
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%0A%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%20%20%3Cpath%20d%3D%22M12%202V6%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M12%2018V22%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M4.93%204.93L7.76%207.76%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M16.24%2016.24L19.07%2019.07%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M2%2012H6%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M18%2012H22%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M4.93%2019.07L7.76%2016.24%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M16.24%207.76L19.07%204.93%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: center right 8px;
+            background-size: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        .map-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -465,7 +483,7 @@
             <div class="location-selectors">
                 <div class="location-select-container">
                     <select class="location-select" id="originSelect">
-                        <option value="" disabled selected>Select Origin</option>
+                        <option value="" disabled selected>Select Origin 2</option>
                     </select>
                 </div>
                 <div class="location-select-container">
@@ -511,48 +529,84 @@
 
 
     <script>
+        // Initialize Supabase client
+        const supabaseUrl = 'https://jeszxshbzmnxdoqjltuk.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Implc3p4c2hiem1ueGRvcWpsdHVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA4MzM0NjIsImV4cCI6MjA1NjQwOTQ2Mn0.FgZmXxDX00_9OLyLgFM_dyrPpb1eISeIte9s1edLPcE'
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+
         // Add this before the DOMContentLoaded event listener
-        const routeData = {
-            southbound: [
-                { origin: "Iba", destination: "Olongapo", via: null },
-                { origin: "Iba", destination: "Pasay", via: "Express" },
-                { origin: "Iba", destination: "Caloocan", via: "Express" },
-                { origin: "Iba", destination: "Sampaloc", via: "Express" },
-                { origin: "Iba", destination: "Cubao", via: "Express" },
-                { origin: "Iba", destination: "Pasay", via: "San Fernando" },
-                { origin: "Iba", destination: "Caloocan", via: "San Fernando" },
-                { origin: "Iba", destination: "Sampaloc", via: "San Fernando" },
-                { origin: "Iba", destination: "Cubao", via: "San Fernando" },
-                { origin: "Santa Cruz", destination: "Olongapo", via: null },
-                { origin: "Santa Cruz", destination: "Pasay", via: "Express" },
-                { origin: "Santa Cruz", destination: "Caloocan", via: "Express" },
-                { origin: "Santa Cruz", destination: "Sampaloc", via: "Express" },
-                { origin: "Santa Cruz", destination: "Pasay", via: "San Fernando" },
-                { origin: "Santa Cruz", destination: "Caloocan", via: "San Fernando" },
-                { origin: "Santa Cruz", destination: "Sampaloc", via: "San Fernando" }
-            ],
-            northbound: [
-                { origin: "Olongapo", destination: "Iba", via: null },
-                { origin: "Pasay", destination: "Iba", via: "Express" },
-                { origin: "Caloocan", destination: "Iba", via: "Express" },
-                { origin: "Sampaloc", destination: "Iba", via: "Express" },
-                { origin: "Cubao", destination: "Iba", via: "Express" },
-                { origin: "Pasay", destination: "Iba", via: "San Fernando" },
-                { origin: "Caloocan", destination: "Iba", via: "San Fernando" },
-                { origin: "Sampaloc", destination: "Iba", via: "San Fernando" },
-                { origin: "Cubao", destination: "Iba", via: "San Fernando" },
-                { origin: "Olongapo", destination: "Santa Cruz", via: null },
-                { origin: "Pasay", destination: "Santa Cruz", via: "Express" },
-                { origin: "Caloocan", destination: "Santa Cruz", via: "Express" },
-                { origin: "Sampaloc", destination: "Santa Cruz", via: "Express" },
-                { origin: "Pasay", destination: "Santa Cruz", via: "San Fernando" },
-                { origin: "Caloocan", destination: "Santa Cruz", via: "San Fernando" },
-                { origin: "Sampaloc", destination: "Santa Cruz", via: "San Fernando" }
-            ]
-        };
+        let currentDirection = 'Southbound';
+        let selectedRouteId = null;
+        let locationUpdateInterval = null; // Store interval ID
+        let currentTripId = null; // Store current trip ID
 
+        // Modify the fetchRoutes function to filter by direction
+        async function fetchRoutes(direction) {
+            try {
+                console.log('Starting fetchRoutes with direction:', direction);
+                
+                // Log the query we're about to make
+                const query = supabase
+                    .from('routes')
+                    .select(`
+                        id,
+                        routename,
+                        direction,
+                        via,
+                        origin:stops!routes_origin_stop_id_fkey(name),
+                        destination:stops!routes_destination_stop_id_fkey(name)
+                    `)
+                    .eq('direction', direction) // Add back the direction filter
+                    .order('routename');
+                
+                console.log('Query to be executed:', query.toString());
 
-        document.addEventListener('DOMContentLoaded', function() {
+                const { data: routes, error, status } = await query;
+
+                console.log('Query response status:', status);
+                console.log('Raw response data:', routes);
+                console.log(`Total ${direction} routes found:`, routes ? routes.length : 0);
+
+                if (error) {
+                    console.error('Supabase query error details:', {
+                        message: error.message,
+                        details: error.details,
+                        hint: error.hint
+                    });
+                    throw error;
+                }
+
+                if (!routes || routes.length === 0) {
+                    console.log(`No routes found for direction: ${direction}`);
+                    return [];
+                }
+
+                // Transform the data to match our expected format
+                const transformedRoutes = routes.map(route => {
+                    console.log('Processing route:', route);
+                    if (!route.origin || !route.destination) {
+                        console.warn('Route missing origin or destination:', route);
+                        return null;
+                    }
+                    return {
+                        id: route.id,
+                        origin: route.origin.name,
+                        destination: route.destination.name,
+                        via: route.via,
+                        direction: route.direction
+                    };
+                }).filter(route => route !== null);
+
+                console.log(`Transformed ${direction} routes:`, transformedRoutes);
+                return transformedRoutes;
+            } catch (error) {
+                console.error('Error in fetchRoutes:', error);
+                console.error('Error stack:', error.stack);
+                return [];
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async function() {
             // DOM elements
             const refreshBtn = document.getElementById('refreshBtn');
             const busList = document.getElementById('busList');
@@ -565,61 +619,40 @@
             const originSelect = document.getElementById('originSelect');
             const destinationSelect = document.getElementById('destinationSelect');
            
-            // Route data
-            const routeData = {
-                southbound: [
-                    { origin: "Iba", destination: "Olongapo", via: null },
-                    { origin: "Iba", destination: "Pasay", via: "Express" },
-                    { origin: "Iba", destination: "Caloocan", via: "Express" },
-                    { origin: "Iba", destination: "Sampaloc", via: "Express" },
-                    { origin: "Iba", destination: "Cubao", via: "Express" },
-                    { origin: "Iba", destination: "Pasay", via: "San Fernando" },
-                    { origin: "Iba", destination: "Caloocan", via: "San Fernando" },
-                    { origin: "Iba", destination: "Sampaloc", via: "San Fernando" },
-                    { origin: "Iba", destination: "Cubao", via: "San Fernando" },
-                    { origin: "Santa Cruz", destination: "Olongapo", via: null },
-                    { origin: "Santa Cruz", destination: "Pasay", via: "Express" },
-                    { origin: "Santa Cruz", destination: "Caloocan", via: "Express" },
-                    { origin: "Santa Cruz", destination: "Sampaloc", via: "Express" },
-                    { origin: "Santa Cruz", destination: "Pasay", via: "San Fernando" },
-                    { origin: "Santa Cruz", destination: "Caloocan", via: "San Fernando" },
-                    { origin: "Santa Cruz", destination: "Sampaloc", via: "San Fernando" }
-                ],
-                northbound: [
-                    { origin: "Olongapo", destination: "Iba", via: null },
-                    { origin: "Pasay", destination: "Iba", via: "Express" },
-                    { origin: "Caloocan", destination: "Iba", via: "Express" },
-                    { origin: "Sampaloc", destination: "Iba", via: "Express" },
-                    { origin: "Cubao", destination: "Iba", via: "Express" },
-                    { origin: "Pasay", destination: "Iba", via: "San Fernando" },
-                    { origin: "Caloocan", destination: "Iba", via: "San Fernando" },
-                    { origin: "Sampaloc", destination: "Iba", via: "San Fernando" },
-                    { origin: "Cubao", destination: "Iba", via: "San Fernando" },
-                    { origin: "Olongapo", destination: "Santa Cruz", via: null },
-                    { origin: "Pasay", destination: "Santa Cruz", via: "Express" },
-                    { origin: "Caloocan", destination: "Santa Cruz", via: "Express" },
-                    { origin: "Sampaloc", destination: "Santa Cruz", via: "Express" },
-                    { origin: "Pasay", destination: "Santa Cruz", via: "San Fernando" },
-                    { origin: "Caloocan", destination: "Santa Cruz", via: "San Fernando" },
-                    { origin: "Sampaloc", destination: "Santa Cruz", via: "San Fernando" }
-                ]
-            };
-           
-            // Current direction (default: southbound)
-            let currentDirection = 'southbound';
-           
-            // Initialize the page with southbound routes
-            generateBusData();
+            // Initialize the page with stops and southbound routes
+            try {
+                await updateOriginOptions()
+                generateBusData()
+            } catch (error) {
+                console.error('Error initializing page:', error)
+                alert('Failed to initialize page. Please refresh.')
+            }
            
             // Function to generate random bus data based on the current direction
-            function generateBusData() {
-                loadingIndicator.style.display = 'flex';
-               
-                setTimeout(function() {
+            async function generateBusData() {
+                try {
+                    loadingIndicator.style.display = 'flex';
+                    
+                    // Fetch routes for current direction
+                    const routes = await fetchRoutes(currentDirection);
+                    
+                    // Update the bus list with fetched routes
+                    const buses = routes.map((route, index) => ({
+                        id: route.id,
+                        icon: `R${index + 1}`,
+                        route: route.via ?
+                            `${route.origin} → ${route.destination} <span class="via-badge">${route.via}</span>` :
+                            `${route.origin} → ${route.destination}`
+                    }));
+
+                    updateBusList(buses);
+                } catch (error) {
+                    console.error('Error generating bus data:', error);
+                    emptyState.style.display = 'flex';
+                    busList.style.display = 'none';
+                } finally {
                     loadingIndicator.style.display = 'none';
-                    updateOriginOptions(); // Update origin options when direction changes
-                    filterRoutes(); // Use filterRoutes instead of direct mapping
-                }, 1000);
+                }
             }
            
             // Add this sorting function before filtering routes
@@ -642,42 +675,83 @@
             }
 
 
-            // Modify the filterRoutes function to use sorting
-            function filterRoutes() {
-                const selectedOrigin = originSelect.value;
-                const selectedDestination = destinationSelect.value;
-                const routes = routeData[currentDirection];
-               
-                const filteredRoutes = routes.filter(route => {
-                    const matchOrigin = !selectedOrigin || route.origin === selectedOrigin;
-                    const matchDestination = !selectedDestination || route.destination === selectedDestination;
-                    return matchOrigin && matchDestination;
-                });
-               
-                // Sort the filtered routes
-                const sortedRoutes = sortRoutes(filteredRoutes);
-               
-                const buses = sortedRoutes.map((route, index) => ({
-                    id: (index + 1000).toString(),
-                    icon: `R${index + 1}`,
-                    route: route.via ?
-                        `${route.origin} → ${route.destination} <span class="via-badge">${route.via}</span>` :
-                        `${route.origin} → ${route.destination}`
-                }));
-               
-                updateBusList(buses);
+            // Modify the filterRoutes function
+            async function filterRoutes() {
+                try {
+                    const selectedOrigin = originSelect.value;
+                    const selectedDestination = destinationSelect.value;
+                    
+                    console.log('Starting filterRoutes with:', {
+                        direction: currentDirection,
+                        origin: selectedOrigin,
+                        destination: selectedDestination
+                    });
+
+                    // Fetch all routes for current direction
+                    console.log('Fetching routes for direction:', currentDirection);
+                    let routes = await fetchRoutes(currentDirection);
+                    console.log('Received routes from fetchRoutes:', routes);
+
+                    // Filter based on selected origin/destination
+                    const filteredRoutes = routes.filter(route => {
+                        // Check if route matches the selected origin and destination
+                        const matchOrigin = !selectedOrigin || route.origin === selectedOrigin;
+                        const matchDestination = !selectedDestination || route.destination === selectedDestination;
+                        
+                        // Log the filtering details for debugging
+                        console.log('Filtering route:', {
+                            route,
+                            matchOrigin,
+                            matchDestination,
+                            selected: matchOrigin && matchDestination
+                        });
+                        
+                        // Return true if both origin and destination match (or aren't selected)
+                        return matchOrigin && matchDestination;
+                    });
+
+                    console.log('Filtered routes:', filteredRoutes);
+
+                    // Sort the filtered routes
+                    const sortedRoutes = sortRoutes(filteredRoutes);
+                    console.log('Sorted routes:', sortedRoutes);
+
+                    // Create bus items from routes
+                    const buses = sortedRoutes.map((route, index) => {
+                        console.log('Creating bus item for route:', route);
+                        return {
+                            id: route.id,
+                            icon: `R${index + 1}`,
+                            route: route.via ?
+                                `${route.origin} → ${route.destination} <span class="via-badge">${route.via}</span>` :
+                                `${route.origin} → ${route.destination}`
+                        };
+                    });
+
+                    console.log('Final bus items to display:', buses);
+                    updateBusList(buses);
+                } catch (error) {
+                    console.error('Error in filterRoutes:', error);
+                    console.error('Error stack:', error.stack);
+                    emptyState.style.display = 'flex';
+                    busList.style.display = 'none';
+                }
             }
            
             // Update the bus list
             function updateBusList(buses) {
+                console.log('Updating bus list with:', buses);
+                
                 // Clear the current list
                 busList.innerHTML = '';
                
                 // Check if we have any buses
                 if (buses.length === 0) {
+                    console.log('No buses to display, showing empty state');
                     emptyState.style.display = 'flex';
                     busList.style.display = 'none';
                 } else {
+                    console.log('Displaying', buses.length, 'buses');
                     emptyState.style.display = 'none';
                     busList.style.display = 'block';
                    
@@ -687,7 +761,6 @@
                         busItem.className = 'bus-item';
                         busItem.setAttribute('data-id', bus.id);
                        
-                        // Modified to only show route once
                         busItem.innerHTML = `
                             <div class="bus-icon">${bus.icon}</div>
                             <div class="bus-details">
@@ -727,33 +800,36 @@
                 selectedBusItem.style.backgroundColor = 'rgba(57, 194, 255, 0.1)';
                 selectedBusItem.style.borderLeft = '4px solid var(--accent-blue)';
                
-                // Enable the Start Trip button
+                // Enable the Start Trip button and update its state
+                const mapBtn = document.getElementById('mapBtn');
                 mapBtn.disabled = false;
+                mapBtn.style.opacity = '1';
+                mapBtn.style.cursor = 'pointer';
             }
            
             // Event listeners
            
             // Direction buttons
             southboundBtn.addEventListener('click', function() {
-                if (currentDirection !== 'southbound') {
-                    currentDirection = 'southbound';
+                if (currentDirection !== 'Southbound') { // Change to match exact database value
+                    console.log('Switching to Southbound direction');
+                    currentDirection = 'Southbound'; // Match exact database value
                     southboundBtn.classList.add('active');
                     northboundBtn.classList.remove('active');
                     originSelect.value = ''; // Reset selection
                     destinationSelect.value = ''; // Reset selection
-                    updateOriginOptions(); // Update options for southbound
                     generateBusData();
                 }
             });
            
             northboundBtn.addEventListener('click', function() {
-                if (currentDirection !== 'northbound') {
-                    currentDirection = 'northbound';
+                if (currentDirection !== 'Northbound') { // Change to match exact database value
+                    console.log('Switching to Northbound direction');
+                    currentDirection = 'Northbound'; // Match exact database value
                     northboundBtn.classList.add('active');
                     southboundBtn.classList.remove('active');
                     originSelect.value = ''; // Reset selection
                     destinationSelect.value = ''; // Reset selection
-                    updateOriginOptions(); // Update options for northbound
                     generateBusData();
                 }
             });
@@ -764,7 +840,7 @@
             });
            
             // View Map button
-            mapBtn.addEventListener('click', function() {
+            mapBtn.addEventListener('click', async function() {
                 if (!selectedRouteId || !busNumberInput.value.trim()) {
                     alert('Please select a route and enter a bus number');
                     return;
@@ -772,21 +848,127 @@
 
 
                 if (this.textContent === 'Start Trip') {
-                    this.textContent = 'End Trip';
-                    this.style.backgroundColor = '#d32f2f';
+                    try {
+                        console.log('Starting new trip with:', {
+                            routeId: selectedRouteId,
+                            busNumber: busNumberInput.value.trim()
+                        });
+
+                        // Get initial location
+                        const position = await getCurrentPosition();
+                        console.log('Got initial position:', {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude
+                        });
+
+                        // Create new bus trip record
+                        const { data: bustrip, error } = await supabase
+                            .from('bustrip')
+                            .insert([
+                                {
+                                    routeid: selectedRouteId,
+                                    busnumber: busNumberInput.value.trim(),
+                                    latitude: position.coords.latitude,
+                                    longitude: position.coords.longitude
+                                }
+                            ])
+                            .select()
+                            .single();
+
+                        if (error) {
+                            console.error('Error creating bus trip:', error);
+                            console.error('Error details:', {
+                                message: error.message,
+                                details: error.details,
+                                hint: error.hint,
+                                code: error.code
+                            });
+                            alert('Failed to start trip. Please try again.');
+                            return;
+                        }
+
+                        // Store the trip ID
+                        currentTripId = bustrip.id;
+                        
+                        console.log('Bus trip created successfully:', {
+                            tripId: bustrip.id,
+                            routeId: bustrip.routeid,
+                            busNumber: bustrip.busnumber,
+                            recordedAt: bustrip.recorded_at,
+                            coordinates: {
+                                lat: bustrip.latitude,
+                                lng: bustrip.longitude
+                            }
+                        });
+                        
+                        this.textContent = 'End Trip';
+                        this.style.backgroundColor = '#d32f2f';
+
+                        // Start location tracking
+                        startLocationTracking();
+
+                    } catch (error) {
+                        console.error('Error in start trip:', error);
+                        console.error('Error stack:', error.stack);
+                        alert('Failed to start trip. Please try again.');
+                    }
                 } else {
+                    console.log('Ending trip and resetting state');
+                    try {
+                        // Delete all bustrip records for this bus and route
+                        console.log('Deleting bustrip records for:', {
+                            busNumber: busNumberInput.value.trim(),
+                            routeId: selectedRouteId
+                        });
+
+                        const { data: deletedRecords, error } = await supabase
+                            .from('bustrip')
+                            .delete()
+                            .match({
+                                busnumber: busNumberInput.value.trim(),
+                                routeid: selectedRouteId
+                            })
+                            .select();
+
+                        if (error) {
+                            console.error('Error deleting bustrip records:', error);
+                            console.error('Error details:', {
+                                message: error.message,
+                                details: error.details,
+                                hint: error.hint,
+                                code: error.code
+                            });
+                            alert('Failed to clean up trip records. Please try again.');
+                            return;
+                        }
+
+                        console.log('Successfully deleted bustrip records:', {
+                            count: deletedRecords?.length || 0,
+                            records: deletedRecords
+                        });
+                    } catch (error) {
+                        console.error('Error in end trip cleanup:', error);
+                        console.error('Error stack:', error.stack);
+                        alert('Failed to clean up trip records. Please try again.');
+                        return;
+                    }
+
+                    // Stop location tracking
+                    stopLocationTracking();
+                    currentTripId = null;
+
                     // Reset everything when ending trip
                     this.textContent = 'Start Trip';
                     this.style.backgroundColor = 'var(--button-color)';
-                   
+                    
                     // Reset bus number input
                     busNumberInput.value = '';
                     busNumberInput.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                   
+                    
                     // Reset origin and destination selections
                     originSelect.value = '';
                     destinationSelect.value = '';
-                   
+                    
                     // Reset route selection
                     selectedRouteId = null;
                     const allBusItems = document.querySelectorAll('.bus-item');
@@ -794,7 +976,8 @@
                         item.style.backgroundColor = '';
                         item.style.borderLeft = '';
                     });
-                   
+                    
+                    console.log('State reset complete, refreshing route list');
                     // Refresh the route list
                     generateBusData();
                 }
@@ -812,99 +995,223 @@
 
 
             // Add event listeners for the selectors
-            originSelect.addEventListener('change', filterRoutes);
-            destinationSelect.addEventListener('change', filterRoutes);
+            originSelect.addEventListener('change', function() {
+                console.log('Origin selected:', this.value);
+                filterRoutes();
+            });
+            destinationSelect.addEventListener('change', function() {
+                console.log('Destination selected:', this.value);
+                filterRoutes();
+            });
 
 
             // Initialize the selects
             updateOriginOptions();
             updateDestinationOptions();
-        });
 
-
-        // Replace the existing updateOriginOptions function
-        function updateOriginOptions() {
-            // Get all unique origins from both southbound and northbound routes
-            const allOrigins = [...new Set([
-                ...routeData.southbound.map(route => route.origin),
-                ...routeData.northbound.map(route => route.origin)
-            ])].sort();
-           
-            // Clear current options
-            originSelect.innerHTML = '<option value="" disabled selected>Select Origin</option>';
-           
-            // Add all origins
-            allOrigins.forEach(origin => {
-                const option = document.createElement('option');
-                option.value = origin;
-                option.textContent = origin;
-                originSelect.appendChild(option);
+            // Add logging to verify Supabase initialization
+            console.log('Supabase client initialization:', {
+                url: supabaseUrl,
+                hasKey: !!supabaseKey,
+                client: !!supabase
             });
 
+            // Test Supabase connection
+            async function testSupabaseConnection() {
+                try {
+                    console.log('Testing Supabase connection...');
+                    const { data, error } = await supabase
+                        .from('routes')
+                        .select('count')
+                        .limit(1);
+                    
+                    if (error) throw error;
+                    console.log('Supabase connection test successful:', data);
+                } catch (error) {
+                    console.error('Supabase connection test failed:', error);
+                }
+            }
 
-            // Update destinations after updating origins
-            updateDestinationOptions();
-        }
+            // Call the test function when the page loads
+            testSupabaseConnection();
 
-
-        // Replace the existing updateDestinationOptions function
-        function updateDestinationOptions() {
-            // Get all unique destinations from both southbound and northbound routes
-            const allDestinations = [...new Set([
-                ...routeData.southbound.map(route => route.destination),
-                ...routeData.northbound.map(route => route.destination)
-            ])].sort();
-           
-            // Clear current options
-            destinationSelect.innerHTML = '<option value="" disabled selected>Select Destination</option>';
-           
-            // Add all destinations
-            allDestinations.forEach(destination => {
-                const option = document.createElement('option');
-                option.value = destination;
-                option.textContent = destination;
-                destinationSelect.appendChild(option);
-            });
-        }
-
-
-        // Add event listener for origin select to update destinations
-        originSelect.addEventListener('change', function() {
-            filterRoutes();
-        });
-
-
-        // Add this to the southbound button click event
-        southboundBtn.addEventListener('click', function() {
-            if (currentDirection !== 'southbound') {
-                currentDirection = 'southbound';
-                southboundBtn.classList.add('active');
-                northboundBtn.classList.remove('active');
-                originSelect.value = ''; // Reset selection
-                destinationSelect.value = ''; // Reset selection
-                updateOriginOptions(); // Update options for southbound
-                generateBusData();
+            // Add initial button state when page loads
+            if (!selectedRouteId) {
+                mapBtn.disabled = true;
+                mapBtn.style.opacity = '0.5';
+                mapBtn.style.cursor = 'not-allowed';
             }
         });
 
 
-        // Add this to the northbound button click event
-        northboundBtn.addEventListener('click', function() {
-            if (currentDirection !== 'northbound') {
-                currentDirection = 'northbound';
-                northboundBtn.classList.add('active');
-                southboundBtn.classList.remove('active');
-                originSelect.value = ''; // Reset selection
-                destinationSelect.value = ''; // Reset selection
-                updateOriginOptions(); // Update options for northbound
-                generateBusData();
+        // Add loading indicators to the select elements
+        async function updateOriginOptions() {
+            try {
+                // Add loading class
+                originSelect.classList.add('loading');
+                
+                // Fetch stops from Supabase
+                const { data: stops, error } = await supabase
+                    .from('stops')
+                    .select('name')
+                    .order('name')
+
+                if (error) throw error
+
+                // Clear current options
+                originSelect.innerHTML = '<option value="" disabled selected>Select Origin</option>'
+
+                if (stops && stops.length > 0) {
+                    // Add all stops as options
+                    stops.forEach(stop => {
+                        const option = document.createElement('option')
+                        option.value = stop.name
+                        option.textContent = stop.name
+                        originSelect.appendChild(option)
+                    })
+                } else {
+                    console.log('No stops found in the database')
+                }
+
+                // Update destinations after updating origins
+                await updateDestinationOptions()
+            } catch (error) {
+                console.error('Error fetching stops:', error)
+                alert('Failed to load stops. Please try again.')
+            } finally {
+                // Remove loading class
+                originSelect.classList.remove('loading')
             }
-        });
+        }
 
 
-        // Add this variable at the top of your script with other variables
-        let selectedRouteId = null;
+        async function updateDestinationOptions() {
+            try {
+                // Add loading class
+                destinationSelect.classList.add('loading');
+                
+                // Fetch stops from Supabase
+                const { data: stops, error } = await supabase
+                    .from('stops')
+                    .select('name')
+                    .order('name')
+
+                if (error) throw error
+
+                // Clear current options
+                destinationSelect.innerHTML = '<option value="" disabled selected>Select Destination</option>'
+
+                if (stops && stops.length > 0) {
+                    // Add all stops as options
+                    stops.forEach(stop => {
+                        const option = document.createElement('option')
+                        option.value = stop.name
+                        option.textContent = stop.name
+                        destinationSelect.appendChild(option)
+                    })
+                } else {
+                    console.log('No stops found in the database')
+                }
+            } catch (error) {
+                console.error('Error fetching stops:', error)
+                alert('Failed to load stops. Please try again.')
+            } finally {
+                // Remove loading class
+                destinationSelect.classList.remove('loading')
+            }
+        }
+
+        // Add these new functions for location tracking
+        function startLocationTracking() {
+            if (!navigator.geolocation) {
+                console.error('Geolocation is not supported by this browser');
+                alert('Geolocation is not supported by this browser');
+                return;
+            }
+
+            // Update location immediately
+            updateLocation();
+
+            // Then update every minute
+            console.log('Setting up location tracking interval (every 60 seconds)');
+            locationUpdateInterval = setInterval(() => {
+                console.log('⏰ One minute passed, updating location...');
+                updateLocation();
+            }, 60000);
+
+            console.log('🚀 Location tracking started for trip:', currentTripId);
+        }
+
+        function stopLocationTracking() {
+            if (locationUpdateInterval) {
+                clearInterval(locationUpdateInterval);
+                locationUpdateInterval = null;
+                console.log('Location tracking stopped');
+            }
+        }
+
+        async function updateLocation() {
+            if (!currentTripId) return;
+
+            try {
+                console.log('Starting location update for trip:', currentTripId);
+                const position = await getCurrentPosition();
+                console.log('Got current position:', {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    accuracy: position.coords.accuracy,
+                    timestamp: new Date().toISOString()
+                });
+
+                const locationData = {
+                    routeid: selectedRouteId,
+                    busnumber: busNumberInput.value.trim(),
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                };
+                
+                console.log('Inserting new bustrip record with:', locationData);
+
+                const { data: newLocation, error } = await supabase
+                    .from('bustrip')
+                    .insert([locationData])
+                    .select();
+
+                if (error) {
+                    console.error('Error updating location:', error);
+                    console.error('Error details:', {
+                        message: error.message,
+                        details: error.details,
+                        hint: error.hint,
+                        code: error.code
+                    });
+                    return;
+                }
+
+                console.log('🚌 New location recorded successfully:', {
+                    tripId: currentTripId,
+                    routeId: selectedRouteId,
+                    busNumber: busNumberInput.value,
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    timestamp: new Date().toISOString(),
+                    newRecord: newLocation
+                });
+            } catch (error) {
+                console.error('Error in updateLocation:', error);
+                console.error('Error stack:', error.stack);
+            }
+        }
+
+        function getCurrentPosition() {
+            return new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                });
+            });
+        }
     </script>
 </body>
 </html>
-
