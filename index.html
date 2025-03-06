@@ -379,7 +379,7 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             padding: 12px;
-            color: var(--text-color);
+            color: var (--text-color);
             font-size: 16px;
             outline: none;
             cursor: pointer;
@@ -921,31 +921,22 @@
                             routeId: selectedRouteId
                         });
 
-                        const { data: deletedRecords, error } = await supabase
+                        const { error } = await supabase
                             .from('bustrip')
                             .delete()
                             .match({
                                 busnumber: busNumberInput.value.trim(),
                                 routeid: selectedRouteId
-                            })
-                            .select();
+                            });
 
                         if (error) {
-                            console.error('Error deleting bustrip records:', error);
-                            console.error('Error details:', {
-                                message: error.message,
-                                details: error.details,
-                                hint: error.hint,
-                                code: error.code
-                            });
-                            alert('Failed to clean up trip records. Please try again.');
+                            
+                            console.error('Error deleting bustrip record:', error);
+                            alert('Failed to end trip. Please try again.');
                             return;
                         }
 
-                        console.log('Successfully deleted bustrip records:', {
-                            count: deletedRecords?.length || 0,
-                            records: deletedRecords
-                        });
+                        console.log('Successfully ended trip for bus:', busNumberInput.value.trim());
                     } catch (error) {
                         console.error('Error in end trip cleanup:', error);
                         console.error('Error stack:', error.stack);
@@ -1156,50 +1147,49 @@
             try {
                 console.log('Starting location update for trip:', currentTripId);
                 const position = await getCurrentPosition();
+                
                 console.log('Got current position:', {
                     latitude: position.coords.latitude,
-                    longitude: position.coords.longitude,
-                    accuracy: position.coords.accuracy,
-                    timestamp: new Date().toISOString()
+                    longitude: position.coords.longitude
                 });
 
+                // Prepare the location data using recorded_at instead of updated_at
                 const locationData = {
-                    routeid: selectedRouteId,
-                    busnumber: busNumberInput.value.trim(),
                     latitude: position.coords.latitude,
-                    longitude: position.coords.longitude
+                    longitude: position.coords.longitude,
+                    recorded_at: new Date().toISOString() // Use recorded_at to match table schema
                 };
                 
-                console.log('Inserting new bustrip record with:', locationData);
+                console.log('Updating bustrip record for:', {
+                    tripId: currentTripId,
+                    data: locationData
+                });
 
-                const { data: newLocation, error } = await supabase
+                // Update using the currentTripId
+                const { data: updatedLocation, error } = await supabase
                     .from('bustrip')
-                    .insert([locationData])
+                    .update(locationData)
+                    .eq('id', currentTripId)
                     .select();
 
                 if (error) {
                     console.error('Error updating location:', error);
-                    console.error('Error details:', {
-                        message: error.message,
-                        details: error.details,
-                        hint: error.hint,
-                        code: error.code
-                    });
-                    return;
+                    throw error;
                 }
 
-                console.log('🚌 New location recorded successfully:', {
-                    tripId: currentTripId,
-                    routeId: selectedRouteId,
-                    busNumber: busNumberInput.value,
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude,
-                    timestamp: new Date().toISOString(),
-                    newRecord: newLocation
-                });
+                console.log('🚌 Location successfully updated:', updatedLocation);
+
             } catch (error) {
                 console.error('Error in updateLocation:', error);
-                console.error('Error stack:', error.stack);
+                console.error('Error details:', error.message);
+                
+                if (error.code === 1) {
+                    alert('Location access denied. Please enable location services.');
+                } else if (error.code === 2) {
+                    alert('Location unavailable. Please try again.');
+                } else {
+                    alert('Failed to update location. Please try again.');
+                }
             }
         }
 
