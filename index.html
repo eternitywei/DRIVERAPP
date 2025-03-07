@@ -386,6 +386,7 @@
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
+            color: var(--text-color); /* Ensures the selected text is white */
         }
 
 
@@ -398,6 +399,7 @@
             background: var(--darker-bg);
             color: var (--text-color);
             padding: 12px;
+            color: var(--text-color); /* Makes option text white */
         }
 
 
@@ -430,6 +432,11 @@
         .map-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+        }
+
+        /* Add this to style the placeholder text */
+        .location-select option[disabled] {
+            color: var(--text-color); /* Makes placeholder text white */
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
